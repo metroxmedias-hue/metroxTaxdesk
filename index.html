@@ -1,0 +1,1880 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Metrox Taxdesk — App Shell</title>
+  <meta name="description" content="Metrox Taxdesk app shell with navigation, GST calculator, and invoice flow." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg: #0b0e18;
+      --panel: #11162a;
+      --panel-2: #0f1324;
+      --line: rgba(255,255,255,0.08);
+      --ink: #f2efe6;
+      --muted: rgba(242,239,230,0.65);
+      --accent: #f7b23b;
+      --accent-2: #58d6c1;
+      --accent-3: #ff6f61;
+      --shadow: 0 24px 60px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 600px at 0% -10%, rgba(88,214,193,0.12), transparent),
+                  radial-gradient(900px 500px at 100% 10%, rgba(247,178,59,0.14), transparent),
+                  linear-gradient(180deg, #0a0d16, #0b0f1c 55%, #0b0e18);
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      padding: 24px 20px;
+      border-right: 1px solid var(--line);
+      background: rgba(10,12,22,0.75);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      margin-bottom: 28px;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: conic-gradient(from 120deg, var(--accent), var(--accent-2), #7f9cff, var(--accent));
+      display: grid;
+      place-items: center;
+      color: #0b0e18;
+      font-weight: 700;
+    }
+
+    .nav-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav-item {
+      padding: 12px 14px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 14px;
+      border: 1px solid transparent;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .nav-item:hover { border-color: var(--line); color: var(--ink); }
+
+    .nav-item.active {
+      background: rgba(247,178,59,0.12);
+      border-color: rgba(247,178,59,0.4);
+      color: #ffe3b0;
+    }
+
+    .sidebar-footer {
+      margin-top: 24px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(17,22,42,0.7);
+      border: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .sidebar-footer a {
+      color: #ffe3b0;
+      text-decoration: underline;
+    }
+
+    .main {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(11,14,24,0.8);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-family: "Fraunces", serif;
+      font-size: 28px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #1a1407;
+      border-color: transparent;
+      box-shadow: 0 12px 30px rgba(247,178,59,0.35);
+    }
+
+    .content {
+      padding: 28px;
+      display: grid;
+      gap: 24px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 10px;
+    }
+
+    .card h3 { margin: 0; font-size: 18px; }
+    .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .panel h4 { margin: 0; font-size: 16px; }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.08);
+      font-size: 14px;
+      color: var(--muted);
+      gap: 12px;
+    }
+
+    .row:last-child { border-bottom: none; }
+
+    .tag {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(88,214,193,0.4);
+      color: #b6f5ea;
+      background: rgba(88,214,193,0.12);
+    }
+
+    .screen {
+      display: none;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    .screen.active { display: block; }
+
+    .placeholder {
+      border: 1px dashed rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 20px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+      font-size: 14px;
+    }
+
+    .form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .field input, .field select, .field textarea {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #0c111f;
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .field textarea { min-height: 80px; resize: vertical; }
+
+    .split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .items-table th, .items-table td {
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 8px;
+      text-align: left;
+    }
+
+    .items-table th { color: var(--muted); font-weight: 500; }
+
+    .items-table input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #0c111f;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .items-table .btn {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #ffe7ba;
+      background: rgba(247,178,59,0.12);
+      border: 1px solid rgba(247,178,59,0.32);
+      padding: 6px 10px;
+      border-radius: 999px;
+      width: fit-content;
+    }
+
+    .summary {
+      display: grid;
+      gap: 10px;
+      background: #0e1425;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+
+    .summary .row { border-bottom: none; padding: 6px 0; }
+
+    .muted { color: var(--muted); }
+
+    .list-card {
+      display: grid;
+      gap: 12px;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(12,16,30,0.6);
+      cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .list-item:hover { border-color: rgba(247,178,59,0.4); transform: translateY(-1px); }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #ffe3b0;
+    }
+
+    .empty-state {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px dashed rgba(255,255,255,0.18);
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .customer-detail h5 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .customer-detail .row strong { color: var(--ink); }
+
+    .status-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .status-pending { color: #ffd1b3; border-color: rgba(255,209,179,0.35); }
+    .status-partial { color: #bde2ff; border-color: rgba(189,226,255,0.35); }
+    .status-paid { color: #b9f7d4; border-color: rgba(185,247,212,0.35); }
+
+    .btn.ghost { border-style: dashed; color: var(--muted); }
+
+    .payment-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .payment-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(12,16,30,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4,6,12,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      padding: 24px;
+    }
+
+    .modal-backdrop.active { display: flex; }
+
+    .modal {
+      width: min(520px, 100%);
+      background: #0f1426;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 12px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .export-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .wireframes-inline {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: #f6f2e8;
+      min-height: 640px;
+    }
+
+    .wireframes-inline iframe {
+      width: 100%;
+      height: 720px;
+      border: none;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+      .topbar { position: static; }
+      .cards { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .split { grid-template-columns: 1fr; }
+      .wireframes-inline iframe { height: 820px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">EG</div>
+        <div>
+          <div>Metrox Taxdesk</div>
+          <small style="color:var(--muted);font-size:12px;">AI-first billing</small>
+        </div>
+      </div>
+      <div class="nav-group" id="nav">
+        <div class="nav-item active" data-screen="dashboard">Dashboard</div>
+        <div class="nav-item" data-screen="invoices">Invoices</div>
+        <div class="nav-item" data-screen="customers">Customers</div>
+        <div class="nav-item" data-screen="expenses">Expenses</div>
+        <div class="nav-item" data-screen="reports">GST Reports</div>
+        <div class="nav-item" data-screen="settings">Settings</div>
+        <div class="nav-item" data-screen="wireframes">Wireframes</div>
+      </div>
+      <div class="sidebar-footer">
+        View Android MVP wireframes in-app or open
+        <a href="wireframes.html" target="_blank" rel="noreferrer">wireframes.html</a>.
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <h1 id="screen-title">Dashboard</h1>
+        <div class="actions">
+          <button class="btn">Invite Accountant</button>
+          <button class="btn primary" id="new-invoice">New Invoice</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <section class="screen active" id="dashboard">
+          <div class="cards">
+            <div class="card">
+              <span class="tag">Today</span>
+              <h3 id="stat-today">₹0</h3>
+              <p>Sales today</p>
+            </div>
+            <div class="card">
+              <span class="tag">Month</span>
+              <h3 id="stat-month">₹0</h3>
+              <p>Revenue this month</p>
+            </div>
+            <div class="card">
+              <span class="tag">GST</span>
+              <h3 id="stat-gst">₹0</h3>
+              <p>GST payable</p>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="panel">
+              <h4>Recent invoices</h4>
+              <div id="recent-invoices" class="muted">No invoices yet.</div>
+            </div>
+            <div class="panel">
+              <h4>Pending payments</h4>
+              <div id="pending-payments" class="muted">No pending payments.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="invoices">
+          <div class="grid-2">
+            <div class="panel">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h4>Create invoice</h4>
+                <span class="pill">AI-ready</span>
+              </div>
+              <form class="form" id="invoice-form">
+                <div class="split">
+                  <label class="field">Select customer
+                    <select name="customerSelect" id="customer-select">
+                      <option value="">New customer</option>
+                    </select>
+                  </label>
+                  <label class="field">Invoice type
+                    <select name="invoiceType">
+                      <option value="gst">GST Invoice</option>
+                      <option value="non-gst">Non-GST Invoice</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="split">
+                  <label class="field">Customer name
+                    <input type="text" name="customer" placeholder="Rahul Textiles" required />
+                  </label>
+                  <label class="field">Customer GSTIN
+                    <input type="text" name="customerGstin" placeholder="27ABCDE1234F1Z5" />
+                  </label>
+                </div>
+                <div class="split">
+                  <label class="field">Customer phone
+                    <input type="text" name="customerPhone" placeholder="+91 90000 00000" />
+                  </label>
+                  <label class="field">Customer email
+                    <input type="email" name="customerEmail" placeholder="customer@email.com" />
+                  </label>
+                </div>
+                <div class="split">
+                  <label class="field">Customer state
+                    <select name="customerState" id="customer-state">
+                      <option value="Jammu & Kashmir">Jammu & Kashmir</option>
+                      <option value="Himachal Pradesh">Himachal Pradesh</option>
+                      <option value="Punjab">Punjab</option>
+                      <option value="Chandigarh">Chandigarh</option>
+                      <option value="Uttarakhand">Uttarakhand</option>
+                      <option value="Haryana">Haryana</option>
+                      <option value="Delhi">Delhi</option>
+                      <option value="Rajasthan">Rajasthan</option>
+                      <option value="Uttar Pradesh">Uttar Pradesh</option>
+                      <option value="Bihar">Bihar</option>
+                      <option value="Sikkim">Sikkim</option>
+                      <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                      <option value="Nagaland">Nagaland</option>
+                      <option value="Manipur">Manipur</option>
+                      <option value="Mizoram">Mizoram</option>
+                      <option value="Tripura">Tripura</option>
+                      <option value="Meghalaya">Meghalaya</option>
+                      <option value="Assam">Assam</option>
+                      <option value="West Bengal">West Bengal</option>
+                      <option value="Jharkhand">Jharkhand</option>
+                      <option value="Odisha">Odisha</option>
+                      <option value="Chattisgarh">Chattisgarh</option>
+                      <option value="Madhya Pradesh">Madhya Pradesh</option>
+                      <option value="Gujarat">Gujarat</option>
+                      <option value="Daman & Diu">Daman & Diu</option>
+                      <option value="Dadra & Nagar Haveli">Dadra & Nagar Haveli</option>
+                      <option value="Maharashtra" selected>Maharashtra</option>
+                      <option value="Andhra Pradesh (Before Division)">Andhra Pradesh (Before Division)</option>
+                      <option value="Karnataka">Karnataka</option>
+                      <option value="Goa">Goa</option>
+                      <option value="Lakshadweep">Lakshadweep</option>
+                      <option value="Kerala">Kerala</option>
+                      <option value="Tamil Nadu">Tamil Nadu</option>
+                      <option value="Puducherry">Puducherry</option>
+                      <option value="Andaman & Nicobar Islands">Andaman & Nicobar Islands</option>
+                      <option value="Telangana">Telangana</option>
+                      <option value="Andhra Pradesh (Newly Added)">Andhra Pradesh (Newly Added)</option>
+                      <option value="Ladakh">Ladakh</option>
+                    </select>
+                  </label>
+                </div>
+                <label class="field">Customer address
+                  <input type="text" name="customerAddress" placeholder="Full address" />
+                </label>
+                <div class="split">
+                  <label class="field">Place of supply
+                    <select name="supply">
+                      <option value="intra">Intra-state (CGST/SGST)</option>
+                      <option value="inter">Inter-state (IGST)</option>
+                    </select>
+                  </label>
+                  <label class="field">GST slab
+                    <select name="gstRate">
+                      <option value="0">0%</option>
+                      <option value="5">5%</option>
+                      <option value="12">12%</option>
+                      <option value="18" selected>18%</option>
+                      <option value="28">28%</option>
+                    </select>
+                  </label>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h5 style="margin:0;">Line items</h5>
+                    <button type="button" class="btn" id="add-line-item">Add item</button>
+                  </div>
+                  <table class="items-table" style="margin-top:10px;">
+                    <thead>
+                      <tr>
+                        <th>Item/Service</th>
+                        <th>HSN</th>
+                        <th>SAC</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="line-items"></tbody>
+                  </table>
+                </div>
+                <label class="field">Notes
+                  <textarea name="notes" placeholder="Payment terms, thanks note, etc."></textarea>
+                </label>
+                <button type="submit" class="btn primary">Generate Invoice</button>
+              </form>
+            </div>
+            <div class="panel">
+              <h4>Invoice preview</h4>
+              <div class="summary" id="invoice-preview">
+                <div class="row"><span>Invoice #</span><strong id="prev-id">EG-0000</strong></div>
+                <div class="row"><span>Customer</span><strong id="prev-customer">—</strong></div>
+                <div class="row"><span>Taxable value</span><strong id="prev-taxable">₹0</strong></div>
+                <div class="row"><span id="prev-tax-label">GST</span><strong id="prev-tax">₹0</strong></div>
+                <div class="row"><span>Round off</span><strong id="prev-roundoff">₹0</strong></div>
+                <div class="row"><span>Total</span><strong id="prev-total">₹0</strong></div>
+              </div>
+              <div class="summary" id="gst-breakup" style="display:none;">
+                <div class="row"><span>CGST</span><strong id="prev-cgst">₹0</strong></div>
+                <div class="row"><span>SGST</span><strong id="prev-sgst">₹0</strong></div>
+                <div class="row"><span>IGST</span><strong id="prev-igst">₹0</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h4>Invoices list</h4>
+            <table class="items-table" id="invoice-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Customer</th>
+                  <th>Type</th>
+                  <th>GST</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="7" class="muted">No invoices yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <h4>Download Invoices (A4 PDF)</h4>
+            <div id="invoice-downloads" class="list-card"></div>
+          </div>
+        </section>
+
+        <section class="screen" id="customers">
+          <div class="grid-2">
+            <div class="panel">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h4>Customers</h4>
+                <input id="customer-search" class="btn" style="border-radius:12px;" placeholder="Search" />
+              </div>
+              <div id="customer-list" class="list-card"></div>
+            </div>
+            <div class="panel customer-detail">
+              <h4>Customer detail</h4>
+              <div id="customer-detail" class="empty-state">Select a customer to view ledger.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="expenses">
+          <div class="panel">
+            <h4>Expenses</h4>
+            <div class="placeholder">Stub: expense entry, categories, and AI receipt scan.</div>
+          </div>
+        </section>
+
+        <section class="screen" id="reports">
+          <div class="panel">
+            <h4>GST Reports</h4>
+            <div class="summary">
+              <div class="row"><span>Total taxable</span><strong id="gst-taxable">₹0</strong></div>
+              <div class="row"><span>Total GST</span><strong id="gst-total">₹0</strong></div>
+              <div class="row"><span>Total invoices</span><strong id="gst-count">0</strong></div>
+            </div>
+            <div class="export-actions">
+              <button class="btn" id="export-gst-pdf">Export PDF (stub)</button>
+              <button class="btn" id="export-gst-excel">Export Excel (CSV)</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="settings">
+          <div class="panel">
+            <h4>Settings</h4>
+            <form class="form" id="settings-form">
+              <div class="split">
+                <label class="field">Company name
+                  <input type="text" name="companyName" placeholder="Metrox Media" />
+                </label>
+                <label class="field">Company GSTIN
+                  <input type="text" name="companyGstin" placeholder="27FNAPB1301AZL" />
+                </label>
+              </div>
+              <div class="split">
+                <label class="field">Company email
+                  <input type="email" name="companyEmail" placeholder="info@company.com" />
+                </label>
+                <label class="field">Company phone
+                  <input type="text" name="companyPhone" placeholder="+91 90000 00000" />
+                </label>
+              </div>
+              <label class="field">Company address
+                <input type="text" name="companyAddress" placeholder="Registered office address" />
+              </label>
+              <label class="field">Company logo
+                <input type="file" name="companyLogo" accept="image/*" />
+              </label>
+              <label class="field">Signature image
+                <input type="file" name="companySignature" accept="image/*" />
+              </label>
+              <label class="field">QR code image
+                <input type="file" name="companyQr" accept="image/*" />
+              </label>
+              <label class="field">Invoice footer text
+                <input type="text" name="invoiceFooter" placeholder="Thank you for your business." />
+              </label>
+              <label class="field">Invoice font
+                <select name="invoiceFont">
+                  <option value="Poppins">Poppins</option>
+                  <option value="Inter">Inter</option>
+                  <option value="Space Grotesk">Space Grotesk</option>
+                  <option value="Roboto Slab">Roboto Slab</option>
+                </select>
+              </label>
+              <div class="split">
+                <label class="field">Invoice prefix
+                  <input type="text" name="invoicePrefix" placeholder="EG-" />
+                </label>
+                <label class="field">Next invoice number
+                  <input type="text" name="invoiceNext" placeholder="001" />
+                </label>
+              </div>
+              <label class="field">Invoice template style
+                <select name="invoiceStyle">
+                  <option value="modern">Modern</option>
+                  <option value="classic">Classic</option>
+                  <option value="minimal">Minimal</option>
+                </select>
+              </label>
+              <label class="field">
+                <input type="checkbox" name="watermarkPaid" />
+                Show “PAID” watermark on paid invoices
+              </label>
+              <div class="panel" style="background:rgba(255,255,255,0.03);">
+                <h4>Bank details</h4>
+                <div class="split">
+                  <label class="field">Bank name
+                    <input type="text" name="bankName" />
+                  </label>
+                  <label class="field">Account no.
+                    <input type="text" name="bankAccount" />
+                  </label>
+                </div>
+                <div class="split">
+                  <label class="field">IFSC
+                    <input type="text" name="bankIfsc" />
+                  </label>
+                  <label class="field">Branch
+                    <input type="text" name="bankBranch" />
+                  </label>
+                </div>
+                <label class="field">UPI ID
+                  <input type="text" name="bankUpi" />
+                </label>
+              </div>
+              <button type="submit" class="btn primary">Save settings</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="screen" id="wireframes">
+          <div class="panel">
+            <h4>Android MVP Wireframes</h4>
+            <div class="wireframes-inline">
+              <iframe title="Metrox Taxdesk wireframes" src="wireframes.html"></iframe>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="payment-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <strong id="payment-title">Record payment</strong>
+        <button class="btn ghost" id="payment-close">Close</button>
+      </div>
+      <div class="summary">
+        <div class="row"><span>Invoice</span><strong id="payment-invoice">—</strong></div>
+        <div class="row"><span>Due</span><strong id="payment-due">₹0</strong></div>
+      </div>
+      <label class="field">Payment amount (₹)
+        <input type="number" id="payment-amount" min="0" step="0.01" />
+      </label>
+      <button class="btn primary" id="payment-save">Save payment</button>
+    </div>
+  </div>
+
+  <script>
+    const navItems = document.querySelectorAll('.nav-item');
+    const screens = document.querySelectorAll('.screen');
+    const title = document.getElementById('screen-title');
+    const newInvoiceBtn = document.getElementById('new-invoice');
+
+    navItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        navItems.forEach((n) => n.classList.remove('active'));
+        item.classList.add('active');
+
+        const target = item.dataset.screen;
+        screens.forEach((screen) => {
+          screen.classList.toggle('active', screen.id === target);
+        });
+
+        title.textContent = item.textContent;
+      });
+    });
+
+    newInvoiceBtn.addEventListener('click', () => {
+      document.querySelector('[data-screen="invoices"]').click();
+      document.getElementById('invoice-form').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    const customerSearch = document.getElementById('customer-search');
+    if (customerSearch) {
+      customerSearch.addEventListener('input', renderCustomers);
+    }
+
+    const lineItemsBody = document.getElementById('line-items');
+    const addLineItemBtn = document.getElementById('add-line-item');
+    if (lineItemsBody && addLineItemBtn) {
+      addLineItemBtn.addEventListener('click', () => {
+        lineItemsBody.appendChild(createLineItemRow());
+        updateLineTotals();
+      });
+      lineItemsBody.appendChild(createLineItemRow({ description: 'Service', qty: 1, price: 0 }));
+    }
+
+    const customerSelect = document.getElementById('customer-select');
+    if (customerSelect) {
+      customerSelect.addEventListener('change', (e) => {
+        if (e.target.value) applyCustomerProfile(e.target.value);
+      });
+    }
+
+    const customerStateSelect = document.getElementById('customer-state');
+
+    const state = {
+      invoices: [],
+      invoiceCounter: 2409,
+      payments: [],
+      customers: {},
+      company: {
+        name: 'Metrox Media',
+        address: 'Registered Office: Modern Labour Comp Welfare Society, Sunder Nagar, Malad (W), Mumbai, Maharashtra - 400064',
+        gstin: '27FNAPB1301AZL',
+        email: 'metroxmediaindia@gmail.com',
+        phone: '+91 90000 00000',
+        logo: '',
+        signature: '',
+        qr: '',
+        footer: 'Thank you for your business.',
+        font: 'Poppins',
+        template: 'modern',
+        watermarkPaid: true,
+        invoiceNumber: {
+          prefix: 'EG-',
+          next: '001',
+          pad: 3,
+          start: '001'
+        },
+        bank: {
+          name: 'State Bank of India',
+          account: '0000000000',
+          ifsc: 'SBIN000000',
+          branch: 'Sunder Nagar',
+          upi: 'metrox@upi'
+        },
+        theme: {
+          accent: '#7d3cff',
+          bg: '#111018',
+          band: '#5218b8',
+          text: '#f5f4ff'
+        }
+      }
+    };
+
+    const fmt = new Intl.NumberFormat('en-IN');
+
+    const sellerProfile = () => state.company;
+
+    const gstStateCodes = {
+      'Jammu & Kashmir': '01 JK',
+      'Himachal Pradesh': '02 HP',
+      'Punjab': '03 PB',
+      'Chandigarh': '04 CH',
+      'Uttarakhand': '05 UT',
+      'Haryana': '06 HR',
+      'Delhi': '07 DL',
+      'Rajasthan': '08 RJ',
+      'Uttar Pradesh': '09 UP',
+      'Bihar': '10 BH',
+      'Sikkim': '11 SK',
+      'Arunachal Pradesh': '12 AR',
+      'Nagaland': '13 NL',
+      'Manipur': '14 MN',
+      'Mizoram': '15 MI',
+      'Tripura': '16 TR',
+      'Meghalaya': '17 ME',
+      'Assam': '18 AS',
+      'West Bengal': '19 WB',
+      'Jharkhand': '20 JH',
+      'Odisha': '21 OR',
+      'Chattisgarh': '22 CT',
+      'Madhya Pradesh': '23 MP',
+      'Gujarat': '24 GJ',
+      'Daman & Diu': '25 DD',
+      'Dadra & Nagar Haveli': '26 DN',
+      'Maharashtra': '27 MH',
+      'Andhra Pradesh (Before Division)': '28 AP',
+      'Karnataka': '29 KA',
+      'Goa': '30 GA',
+      'Lakshadweep': '31 LD',
+      'Kerala': '32 KL',
+      'Tamil Nadu': '33 TN',
+      'Puducherry': '34 PY',
+      'Andaman & Nicobar Islands': '35 AN',
+      'Telangana': '36 TL',
+      'Andhra Pradesh (Newly Added)': '37 AD',
+      'Ladakh': '38 LA'
+    };
+
+    function calcGST(amount, rate, supply, invoiceType) {
+      const taxable = amount;
+      if (invoiceType === 'non-gst' || rate === 0) {
+        const rawTotal = taxable;
+        const roundedTotal = Math.round(rawTotal);
+        return {
+          taxable,
+          cgst: 0,
+          sgst: 0,
+          igst: 0,
+          total: roundedTotal,
+          roundOff: roundedTotal - rawTotal
+        };
+      }
+      const tax = taxable * (rate / 100);
+      if (supply === 'inter') {
+        const rawTotal = taxable + tax;
+        const roundedTotal = Math.round(rawTotal);
+        return {
+          taxable,
+          cgst: 0,
+          sgst: 0,
+          igst: tax,
+          total: roundedTotal,
+          roundOff: roundedTotal - rawTotal
+        };
+      }
+      const half = tax / 2;
+      const rawTotal = taxable + tax;
+      const roundedTotal = Math.round(rawTotal);
+      return {
+        taxable,
+        cgst: half,
+        sgst: half,
+        igst: 0,
+        total: roundedTotal,
+        roundOff: roundedTotal - rawTotal
+      };
+    }
+
+    function updateDashboard() {
+      const totalSales = state.invoices.reduce((sum, inv) => sum + inv.total, 0);
+      const gstPayable = state.invoices.reduce((sum, inv) => sum + inv.cgst + inv.sgst + inv.igst, 0);
+      document.getElementById('stat-today').textContent = `₹${fmt.format(totalSales)}`;
+      document.getElementById('stat-month').textContent = `₹${fmt.format(totalSales)}`;
+      document.getElementById('stat-gst').textContent = `₹${fmt.format(gstPayable)}`;
+      const gstTaxable = state.invoices.reduce((sum, inv) => sum + inv.taxable, 0);
+      const gstCount = state.invoices.length;
+      const gstTaxableEl = document.getElementById('gst-taxable');
+      const gstTotalEl = document.getElementById('gst-total');
+      const gstCountEl = document.getElementById('gst-count');
+      if (gstTaxableEl) gstTaxableEl.textContent = `₹${fmt.format(gstTaxable)}`;
+      if (gstTotalEl) gstTotalEl.textContent = `₹${fmt.format(gstPayable)}`;
+      if (gstCountEl) gstCountEl.textContent = `${gstCount}`;
+
+      const recent = document.getElementById('recent-invoices');
+      if (!state.invoices.length) {
+        recent.textContent = 'No invoices yet.';
+      } else {
+        recent.innerHTML = state.invoices.slice(-3).reverse().map(inv =>
+          `<div class="row"><span>${inv.customer} • #${inv.id}</span><strong>₹${fmt.format(inv.total)}</strong></div>`
+        ).join('');
+      }
+    }
+
+    function updateInvoiceTable() {
+      const tbody = document.querySelector('#invoice-table tbody');
+      if (!state.invoices.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="muted">No invoices yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.invoices.map(inv => {
+        const cgst = Number(inv.cgst) || 0;
+        const sgst = Number(inv.sgst) || 0;
+        const igst = Number(inv.igst) || 0;
+        const gst = cgst + sgst + igst;
+        let total = Number(inv.total);
+        if (!Number.isFinite(total)) {
+          const taxable = Number(inv.taxable) || 0;
+          const roundOff = Number(inv.roundOff) || 0;
+          total = taxable + gst + roundOff;
+        }
+        const statusClass = inv.status.toLowerCase();
+        return `<tr>
+          <td>#${inv.id}</td>
+          <td>${inv.customer}</td>
+          <td>${inv.type.toUpperCase()}</td>
+          <td>₹${fmt.format(gst)}</td>
+          <td>₹${fmt.format(total)}</td>
+          <td><span class="status-pill status-${statusClass}">${inv.status}</span></td>
+          <td>
+            <button class="btn" data-pay="${inv.id}">Record</button>
+            <button class="btn" data-export="${inv.id}">Export</button>
+            <button class="btn" data-edit="${inv.id}">Edit</button>
+            <button class="btn" data-delete="${inv.id}">Delete</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      tbody.querySelectorAll('[data-pay]').forEach(btn => {
+        btn.addEventListener('click', () => openPaymentModal(btn.dataset.pay));
+      });
+      tbody.querySelectorAll('[data-export]').forEach(btn => {
+        btn.addEventListener('click', () => exportInvoice(btn.dataset.export, false, true));
+      });
+      tbody.querySelectorAll('[data-edit]').forEach(btn => {
+        btn.addEventListener('click', () => editInvoice(btn.dataset.edit));
+      });
+      tbody.querySelectorAll('[data-delete]').forEach(btn => {
+        btn.addEventListener('click', () => deleteInvoice(btn.dataset.delete));
+      });
+    }
+
+    function renderInvoiceDownloads() {
+      const container = document.getElementById('invoice-downloads');
+      if (!container) return;
+      if (!state.invoices.length) {
+        container.innerHTML = '<div class="empty-state">No invoices generated yet.</div>';
+        return;
+      }
+      container.innerHTML = state.invoices.map(inv => `
+        <div class="list-item">
+          <div>
+            <strong>#${inv.id} • ${inv.customer}</strong><br/>
+            <span class="muted">Total ₹${fmt.format(inv.total)} • ${inv.status}</span>
+          </div>
+          <button class="btn" data-download="${inv.id}">Download PDF</button>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('[data-download]').forEach(btn => {
+        btn.addEventListener('click', () => exportInvoice(btn.dataset.download, false, true));
+      });
+    }
+
+    function getCustomerSummaries() {
+      const map = new Map();
+      state.invoices.forEach(inv => {
+        const existing = map.get(inv.customer) || { name: inv.customer, billed: 0, paid: 0 };
+        existing.billed += inv.total;
+        existing.paid += inv.paidAmount || 0;
+        map.set(inv.customer, existing);
+      });
+      return Array.from(map.values())
+        .map(c => ({ ...c, due: Math.max(0, c.billed - c.paid) }))
+        .sort((a, b) => b.billed - a.billed);
+    }
+
+    function renderCustomers() {
+      const list = document.getElementById('customer-list');
+      const search = document.getElementById('customer-search');
+      if (!list || !search) return;
+
+      const term = search.value.trim().toLowerCase();
+      const customers = getCustomerSummaries().filter(c => c.name.toLowerCase().includes(term));
+
+      if (!customers.length) {
+        list.innerHTML = '<div class="empty-state">No customers yet.</div>';
+        document.getElementById('customer-detail').innerHTML = 'Select a customer to view ledger.';
+        return;
+      }
+
+      list.innerHTML = customers.map(c => `
+        <div class="list-item" data-customer="${c.name}">
+          <div>
+            <strong>${c.name}</strong><br/>
+            <span class="muted">Billed ₹${fmt.format(c.billed)} • Due ₹${fmt.format(c.due)}</span>
+          </div>
+          <span class="badge">Ledger</span>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('.list-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const name = item.dataset.customer;
+          renderCustomerDetail(name);
+        });
+      });
+
+      if (!document.getElementById('customer-detail').dataset.active) {
+        renderCustomerDetail(customers[0].name);
+      }
+    }
+
+    function populateCustomerSelect() {
+      const select = document.getElementById('customer-select');
+      if (!select) return;
+      const current = select.value;
+      const names = Object.keys(state.customers).sort();
+      select.innerHTML = '<option value="">New customer</option>' +
+        names.map(name => `<option value="${name}">${name}</option>`).join('');
+      select.value = current;
+    }
+
+    function applyCustomerProfile(name) {
+      const profile = state.customers[name];
+      if (!profile) return;
+      const form = document.getElementById('invoice-form');
+      form.customer.value = profile.name || name;
+      form.customerGstin.value = profile.gstin || '';
+      form.customerPhone.value = profile.phone || '';
+      form.customerEmail.value = profile.email || '';
+      form.customerAddress.value = profile.address || '';
+      if (profile.state) {
+        form.customerState.value = profile.state;
+      }
+    }
+
+    function renderCustomerDetail(name) {
+      const detail = document.getElementById('customer-detail');
+      const invoices = state.invoices.filter(inv => inv.customer === name);
+      const totalBilled = invoices.reduce((sum, inv) => sum + inv.total, 0);
+      const totalPaid = invoices.reduce((sum, inv) => sum + (inv.paidAmount || 0), 0);
+      const totalDue = Math.max(0, totalBilled - totalPaid);
+      const payments = state.payments.filter(p => p.customer === name);
+      const profile = state.customers[name] || {};
+
+      detail.dataset.active = name;
+      detail.innerHTML = `
+        <h5>${name}</h5>
+        <div class="muted" style="margin-top:6px;">
+          GSTIN: ${profile.gstin || '—'}<br/>
+          Phone: ${profile.phone || '—'} • Email: ${profile.email || '—'}<br/>
+          Address: ${profile.address || '—'}
+        </div>
+        <div style="margin-top:10px;">
+          <button class="btn" id="edit-customer-btn">Edit customer</button>
+        </div>
+        <div class="summary" style="margin-top:12px;">
+          <div class="row"><span>Total billed</span><strong>₹${fmt.format(totalBilled)}</strong></div>
+          <div class="row"><span>Total paid</span><strong>₹${fmt.format(totalPaid)}</strong></div>
+          <div class="row"><span>Total due</span><strong>₹${fmt.format(totalDue)}</strong></div>
+        </div>
+        <div id="customer-edit-form" style="display:none;margin-top:12px;">
+          <div class="summary">
+            <div class="row"><span>Name</span><input class="btn" style="border-radius:8px;" id="cust-name" value="${profile.name || name}" /></div>
+            <div class="row"><span>GSTIN</span><input class="btn" style="border-radius:8px;" id="cust-gstin" value="${profile.gstin || ''}" /></div>
+            <div class="row"><span>Phone</span><input class="btn" style="border-radius:8px;" id="cust-phone" value="${profile.phone || ''}" /></div>
+            <div class="row"><span>Email</span><input class="btn" style="border-radius:8px;" id="cust-email" value="${profile.email || ''}" /></div>
+            <div class="row"><span>Address</span><input class="btn" style="border-radius:8px;" id="cust-address" value="${profile.address || ''}" /></div>
+            <div class="row"><span>State</span><input class="btn" style="border-radius:8px;" id="cust-state" value="${profile.state || ''}" /></div>
+          </div>
+          <div style="margin-top:8px;">
+            <button class="btn primary" id="save-customer-btn">Save</button>
+            <button class="btn" id="cancel-customer-btn">Cancel</button>
+          </div>
+        </div>
+        <div style="margin-top:16px;">
+          <strong>Invoices</strong>
+          <div style="margin-top:8px;">
+            ${invoices.length ? `
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>Invoice</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                    <th>Last payment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${invoices.map(inv => {
+                    const invPayments = payments.filter(p => p.invoiceId === inv.id);
+                    const lastPay = invPayments.length ? invPayments[invPayments.length - 1] : null;
+                    const lastDate = lastPay ? (lastPay.iso ? new Date(lastPay.iso).toLocaleDateString('en-IN') : lastPay.date) : '—';
+                    return `
+                      <tr>
+                        <td>#${inv.id}</td>
+                        <td>₹${fmt.format(inv.total)}</td>
+                        <td>₹${fmt.format(inv.paidAmount || 0)}</td>
+                        <td>₹${fmt.format(Math.max(0, inv.total - (inv.paidAmount || 0)))}</td>
+                        <td>${inv.status}</td>
+                        <td>${lastDate}</td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            ` : '<div class="empty-state">No invoices for this customer.</div>'}
+          </div>
+        </div>
+        <div style="margin-top:16px;">
+          <strong>Payments</strong>
+          <div class="payment-list">
+            ${payments.length ? payments.map(p => `
+              <div class="payment-item">
+                <span>${p.iso ? new Date(p.iso).toLocaleDateString('en-IN') : p.date}</span>
+                <strong>₹${fmt.format(p.amount)}</strong>
+              </div>
+            `).join('') : '<div class="empty-state">No payments recorded.</div>'}
+          </div>
+        </div>
+      `;
+
+      const editBtn = document.getElementById('edit-customer-btn');
+      const editForm = document.getElementById('customer-edit-form');
+      const cancelBtn = document.getElementById('cancel-customer-btn');
+      const saveBtn = document.getElementById('save-customer-btn');
+      if (editBtn && editForm) {
+        editBtn.addEventListener('click', () => {
+          editForm.style.display = 'block';
+        });
+      }
+      if (cancelBtn && editForm) {
+        cancelBtn.addEventListener('click', () => {
+          editForm.style.display = 'none';
+        });
+      }
+      if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+          const newName = document.getElementById('cust-name').value.trim() || name;
+          const updated = {
+            name: newName,
+            gstin: document.getElementById('cust-gstin').value.trim(),
+            phone: document.getElementById('cust-phone').value.trim(),
+            email: document.getElementById('cust-email').value.trim(),
+            address: document.getElementById('cust-address').value.trim(),
+            state: document.getElementById('cust-state').value.trim(),
+            stateCode: gstStateCodes[document.getElementById('cust-state').value.trim()] || profile.stateCode || ''
+          };
+          // Update customer key if name changed
+          if (newName !== name) {
+            state.customers[newName] = updated;
+            delete state.customers[name];
+            state.invoices.forEach(inv => {
+              if (inv.customer === name) inv.customer = newName;
+            });
+            state.payments.forEach(p => {
+              if (p.customer === name) p.customer = newName;
+            });
+          } else {
+            state.customers[name] = updated;
+          }
+          saveState();
+          renderCustomers();
+          renderCustomerDetail(newName);
+        });
+      }
+    }
+
+    function setInvoiceStatus(inv) {
+      if ((inv.paidAmount || 0) >= inv.total) {
+        inv.status = 'Paid';
+      } else if ((inv.paidAmount || 0) > 0) {
+        inv.status = 'Partial';
+      } else {
+        inv.status = 'Pending';
+      }
+    }
+
+    function createLineItemRow(data = {}) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input name="desc" value="${data.description || ''}" placeholder="Item or service" /></td>
+        <td><input name="hsn" value="${data.hsn || ''}" placeholder="HSN" /></td>
+        <td><input name="sac" value="${data.sac || ''}" placeholder="SAC" /></td>
+        <td><input name="qty" type="number" min="1" step="1" value="${data.qty || 1}" /></td>
+        <td><input name="price" type="number" min="0" step="0.01" value="${data.price || 0}" /></td>
+        <td class="line-total">₹0</td>
+        <td><button type="button" class="btn ghost remove-line">Remove</button></td>
+      `;
+      row.querySelector('.remove-line').addEventListener('click', () => {
+        row.remove();
+        updateLineTotals();
+      });
+      row.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', updateLineTotals);
+      });
+      return row;
+    }
+
+    function updateLineTotals() {
+      const rows = Array.from(document.querySelectorAll('#line-items tr'));
+      rows.forEach(row => {
+        const qty = Number(row.querySelector('[name="qty"]').value) || 0;
+        const price = Number(row.querySelector('[name="price"]').value) || 0;
+        const total = (qty || 1) * price;
+        row.querySelector('.line-total').textContent = `₹${fmt.format(total)}`;
+      });
+      refreshPreviewFromForm();
+    }
+
+    function collectLineItems() {
+      return Array.from(document.querySelectorAll('#line-items tr')).map(row => {
+        const qty = Number(row.querySelector('[name="qty"]').value) || 0;
+        const price = Number(row.querySelector('[name="price"]').value) || 0;
+        const desc = row.querySelector('[name="desc"]').value.trim();
+        return {
+          description: desc || (qty || price ? 'Item' : ''),
+          hsn: row.querySelector('[name="hsn"]').value.trim(),
+          sac: row.querySelector('[name="sac"]').value.trim(),
+          qty: qty || 1,
+          price,
+          total: (qty || 1) * price
+        };
+      }).filter(item => item.description);
+    }
+
+    function refreshPreviewFromForm() {
+      const form = document.getElementById('invoice-form');
+      if (!form) return;
+      const invoiceType = form.invoiceType.value;
+      const supply = form.supply.value;
+      const rate = Number(form.gstRate.value);
+      const items = collectLineItems();
+      const taxable = items.reduce((sum, item) => sum + item.total, 0);
+      const calc = calcGST(taxable, rate, supply, invoiceType);
+      updatePreview({
+        id: document.getElementById('prev-id').textContent,
+        customer: form.customer.value || '—',
+        taxable: calc.taxable,
+        cgst: calc.cgst,
+        sgst: calc.sgst,
+        igst: calc.igst,
+        total: calc.total,
+        roundOff: calc.roundOff,
+        type: invoiceType,
+        rate,
+        supply
+      });
+    }
+
+    const STORAGE_KEY = 'Metrox Taxdesk_prototype_state_v1';
+
+    function saveState() {
+      const payload = {
+        invoices: state.invoices,
+        invoiceCounter: state.invoiceCounter,
+        payments: state.payments,
+        customers: state.customers,
+        company: state.company
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        state.invoices = Array.isArray(data.invoices) ? data.invoices : [];
+        state.invoiceCounter = Number(data.invoiceCounter) || 2409;
+        state.payments = Array.isArray(data.payments) ? data.payments : [];
+        state.customers = data.customers || {};
+        state.company = {
+          ...state.company,
+          ...(data.company || {}),
+          bank: { ...state.company.bank, ...(data.company?.bank || {}) },
+          theme: { ...state.company.theme, ...(data.company?.theme || {}) },
+          invoiceNumber: { ...state.company.invoiceNumber, ...(data.company?.invoiceNumber || {}) }
+        };
+        if (!state.company.invoiceNumber.pad) {
+          const nextStr = String(state.company.invoiceNumber.next || '001');
+          state.company.invoiceNumber.pad = nextStr.length;
+        }
+        if (!state.company.invoiceNumber.start) {
+          state.company.invoiceNumber.start = state.company.invoiceNumber.next || '001';
+        }
+        state.invoices.forEach(setInvoiceStatus);
+      } catch (err) {
+        console.warn('Failed to load saved state', err);
+      }
+    }
+
+    const paymentModal = document.getElementById('payment-modal');
+    const paymentClose = document.getElementById('payment-close');
+    const paymentSave = document.getElementById('payment-save');
+    const paymentAmount = document.getElementById('payment-amount');
+    let activeInvoiceId = null;
+
+    function openPaymentModal(invoiceId) {
+      const invoice = state.invoices.find(inv => inv.id === invoiceId);
+      if (!invoice) return;
+      activeInvoiceId = invoiceId;
+      document.getElementById('payment-invoice').textContent = `${invoice.id} • ${invoice.customer}`;
+      const due = Math.max(0, invoice.total - (invoice.paidAmount || 0));
+      document.getElementById('payment-due').textContent = `₹${fmt.format(due)}`;
+      paymentAmount.value = due.toFixed(2);
+      paymentModal.classList.add('active');
+    }
+
+    paymentClose.addEventListener('click', () => paymentModal.classList.remove('active'));
+    paymentModal.addEventListener('click', (e) => {
+      if (e.target === paymentModal) paymentModal.classList.remove('active');
+    });
+
+    paymentSave.addEventListener('click', () => {
+      const invoice = state.invoices.find(inv => inv.id === activeInvoiceId);
+      if (!invoice) return;
+      const amount = Number(paymentAmount.value) || 0;
+      const due = Math.max(0, invoice.total - (invoice.paidAmount || 0));
+      const applied = Math.min(amount, due);
+      if (applied <= 0) return;
+      invoice.paidAmount = (invoice.paidAmount || 0) + applied;
+      setInvoiceStatus(invoice);
+      state.payments.push({
+        invoiceId: invoice.id,
+        customer: invoice.customer,
+        amount: applied,
+        date: new Date().toLocaleDateString('en-IN')
+      });
+      updateInvoiceTable();
+      updateDashboard();
+      renderCustomers();
+      renderInvoiceDownloads();
+      saveState();
+      paymentModal.classList.remove('active');
+    });
+
+    function exportInvoice(invoiceId, autoPrint = false, autoPdf = false) {
+      const invoice = state.invoices.find(inv => inv.id === invoiceId);
+      if (!invoice) return;
+      const seller = sellerProfile();
+      const payload = {
+        id: invoice.id,
+        date: invoice.createdAt || new Date().toISOString(),
+        taxable: invoice.taxable,
+        cgst: invoice.cgst,
+        sgst: invoice.sgst,
+        igst: invoice.igst,
+        total: invoice.total,
+        roundOff: invoice.roundOff || 0,
+        notes: invoice.notes || '',
+        items: invoice.items || [],
+        seller: seller,
+        customer: {
+          name: invoice.customer,
+          gstin: invoice.customerDetails?.gstin || '',
+          phone: invoice.customerDetails?.phone || '',
+          email: invoice.customerDetails?.email || '',
+          address: invoice.customerDetails?.address || '',
+          state: invoice.customerDetails?.state || '',
+          stateCode: invoice.customerDetails?.stateCode || ''
+        },
+        theme: seller.theme || {},
+        logo: seller.logo || '',
+        signature: seller.signature || '',
+        qr: seller.qr || '',
+        footer: seller.footer || '',
+        font: seller.font || 'Poppins',
+        bank: seller.bank || {},
+        template: seller.template || 'modern',
+        watermarkPaid: seller.watermarkPaid,
+        status: invoice.status,
+        placeOfSupply: invoice.supply === 'inter' ? 'Inter-state' : 'Intra-state',
+        invoiceType: invoice.type === 'gst' ? 'GST Invoice' : 'Non-GST Invoice'
+      };
+      localStorage.setItem('Metrox Taxdesk_export_invoice', JSON.stringify(payload));
+      let url = 'invoice-template.html';
+      if (autoPrint) url = 'invoice-template.html?auto=print';
+      if (autoPdf) url = 'invoice-template.html?auto=pdf';
+      window.open(url, '_blank');
+    }
+
+    function editInvoice(invoiceId) {
+      const invoice = state.invoices.find(inv => inv.id === invoiceId);
+      if (!invoice) return;
+      document.querySelector('[data-screen="invoices"]').click();
+      const form = document.getElementById('invoice-form');
+      form.customer.value = invoice.customer;
+      form.invoiceType.value = invoice.type;
+      form.supply.value = invoice.supply;
+      form.gstRate.value = invoice.rate;
+      form.customerGstin.value = invoice.customerDetails?.gstin || '';
+      form.customerPhone.value = invoice.customerDetails?.phone || '';
+      form.customerEmail.value = invoice.customerDetails?.email || '';
+      form.customerAddress.value = invoice.customerDetails?.address || '';
+      form.notes.value = invoice.notes || '';
+
+      lineItemsBody.innerHTML = '';
+      (invoice.items || []).forEach(item => {
+        lineItemsBody.appendChild(createLineItemRow(item));
+      });
+      if (!(invoice.items || []).length) {
+        lineItemsBody.appendChild(createLineItemRow({ description: 'Service', qty: 1, price: 0 }));
+      }
+      updateLineTotals();
+
+      form.dataset.editing = invoiceId;
+      form.querySelector('button[type="submit"]').textContent = 'Update Invoice';
+      form.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function deleteInvoice(invoiceId) {
+      const index = state.invoices.findIndex(inv => inv.id === invoiceId);
+      if (index === -1) return;
+      if (!confirm('Delete this invoice? This cannot be undone.')) return;
+      state.invoices.splice(index, 1);
+      resequenceInvoices();
+      updateInvoiceTable();
+      updateDashboard();
+      renderCustomers();
+      renderInvoiceDownloads();
+      saveState();
+    }
+
+    function resequenceInvoices() {
+      const prefix = state.company.invoiceNumber?.prefix || 'EG-';
+      const prefixWithSpace = prefix.endsWith(' ') ? prefix : `${prefix} `;
+      const pad = state.company.invoiceNumber?.pad || 3;
+      const startNum = parseInt(state.company.invoiceNumber?.start || state.company.invoiceNumber?.next || '1', 10);
+      const base = startNum - 1;
+      const idMap = new Map();
+      state.invoices.forEach((inv, idx) => {
+        const newId = `${prefixWithSpace}${String(base + idx + 1).padStart(pad, '0')}`;
+        idMap.set(inv.id, newId);
+        inv.id = newId;
+      });
+      state.company.invoiceNumber.next = String(base + state.invoices.length + 1).padStart(pad, '0');
+      state.payments = state.payments.map(p => ({
+        ...p,
+        invoiceId: idMap.get(p.invoiceId) || p.invoiceId
+      }));
+    }
+
+    const exportPdfBtn = document.getElementById('export-gst-pdf');
+    if (exportPdfBtn) {
+      exportPdfBtn.addEventListener('click', () => {
+        alert('PDF export stub. Implement server-side PDF generation in production.');
+      });
+    }
+
+    const exportExcelBtn = document.getElementById('export-gst-excel');
+    if (exportExcelBtn) {
+      exportExcelBtn.addEventListener('click', () => {
+        const headers = ['Invoice ID', 'Date', 'Customer', 'Taxable', 'CGST', 'SGST', 'IGST', 'Total'];
+        const rows = state.invoices.map(inv => [
+          inv.id,
+          new Date(inv.createdAt || Date.now()).toLocaleDateString('en-IN'),
+          inv.customer,
+          inv.taxable,
+          inv.cgst,
+          inv.sgst,
+          inv.igst,
+          inv.total
+        ]);
+        const csv = [headers, ...rows].map(row => row.join(',')).join('\\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Metrox Taxdesk_gst_report.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    function updatePreview(inv) {
+      document.getElementById('prev-id').textContent = inv.id;
+      document.getElementById('prev-customer').textContent = inv.customer;
+      document.getElementById('prev-taxable').textContent = `₹${fmt.format(inv.taxable)}`;
+      document.getElementById('prev-total').textContent = `₹${fmt.format(inv.total)}`;
+      document.getElementById('prev-roundoff').textContent = `₹${fmt.format(inv.roundOff || 0)}`;
+      const taxLabel = document.getElementById('prev-tax-label');
+      const taxValue = document.getElementById('prev-tax');
+      const breakup = document.getElementById('gst-breakup');
+
+      if (inv.type === 'non-gst' || inv.rate === 0) {
+        taxLabel.textContent = 'GST';
+        taxValue.textContent = '₹0';
+        breakup.style.display = 'none';
+      } else if (inv.supply === 'inter') {
+        taxLabel.textContent = 'IGST';
+        taxValue.textContent = `₹${fmt.format(inv.igst)}`;
+        breakup.style.display = 'none';
+      } else {
+        taxLabel.textContent = 'GST';
+        taxValue.textContent = `₹${fmt.format(inv.cgst + inv.sgst)}`;
+        breakup.style.display = 'grid';
+        document.getElementById('prev-cgst').textContent = `₹${fmt.format(inv.cgst)}`;
+        document.getElementById('prev-sgst').textContent = `₹${fmt.format(inv.sgst)}`;
+        document.getElementById('prev-igst').textContent = '₹0';
+      }
+    }
+
+    const form = document.getElementById('invoice-form');
+    form.addEventListener('input', () => {
+      refreshPreviewFromForm();
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const customer = data.get('customer').trim();
+      const invoiceType = data.get('invoiceType');
+      const supply = data.get('supply');
+      const rate = Number(data.get('gstRate'));
+      const items = collectLineItems();
+      if (!items.length) {
+        alert('Please add at least one line item.');
+        return;
+      }
+      const taxableTotal = items.reduce((sum, item) => sum + item.total, 0);
+
+      const isEditing = !!form.dataset.editing;
+      const prefix = state.company.invoiceNumber?.prefix || 'EG-';
+      if (!state.company.invoiceNumber?.next) {
+        state.company.invoiceNumber = { prefix, next: '001', pad: 3 };
+      }
+      const pad = state.company.invoiceNumber.pad || String(state.company.invoiceNumber.next).length;
+      const nextNum = parseInt(state.company.invoiceNumber.next, 10) || 1;
+      const formatted = String(nextNum).padStart(pad, '0');
+      const prefixWithSpace = prefix.endsWith(' ') ? prefix : `${prefix} `;
+      const id = isEditing ? form.dataset.editing : `${prefixWithSpace}${formatted}`;
+      if (!isEditing) {
+        state.company.invoiceNumber.next = String(nextNum + 1).padStart(pad, '0');
+      }
+      const calc = calcGST(taxableTotal, rate, supply, invoiceType);
+
+      const invoice = {
+        id,
+        customer,
+        customerDetails: {
+          gstin: data.get('customerGstin'),
+          phone: data.get('customerPhone'),
+          email: data.get('customerEmail'),
+          address: data.get('customerAddress'),
+          state: data.get('customerState'),
+          stateCode: gstStateCodes[data.get('customerState')] || ''
+        },
+        items,
+        type: invoiceType,
+        supply,
+        rate,
+        taxable: calc.taxable,
+        cgst: calc.cgst,
+        sgst: calc.sgst,
+        igst: calc.igst,
+        total: calc.total,
+        roundOff: calc.roundOff,
+        paidAmount: 0,
+        createdAt: new Date().toISOString(),
+        notes: data.get('notes') || ''
+      };
+
+      state.customers[customer] = {
+        name: customer,
+        gstin: data.get('customerGstin'),
+        phone: data.get('customerPhone'),
+        email: data.get('customerEmail'),
+        address: data.get('customerAddress'),
+        state: data.get('customerState'),
+        stateCode: gstStateCodes[data.get('customerState')] || ''
+      };
+
+      setInvoiceStatus(invoice);
+      if (isEditing) {
+        const idx = state.invoices.findIndex(inv => inv.id === id);
+        if (idx !== -1) {
+          invoice.paidAmount = state.invoices[idx].paidAmount || 0;
+          invoice.status = state.invoices[idx].status || invoice.status;
+          state.invoices[idx] = invoice;
+        }
+      } else {
+        state.invoices.push(invoice);
+      }
+      updatePreview(invoice);
+      updateInvoiceTable();
+      updateDashboard();
+      renderCustomers();
+      renderInvoiceDownloads();
+      populateCustomerSelect();
+      saveState();
+      form.reset();
+      form.querySelector('[name="gstRate"]').value = '18';
+      delete form.dataset.editing;
+      form.querySelector('button[type="submit"]').textContent = 'Generate Invoice';
+      lineItemsBody.innerHTML = '';
+      lineItemsBody.appendChild(createLineItemRow({ description: 'Service', qty: 1, price: 0 }));
+      updateLineTotals();
+    });
+
+    loadState();
+    updateDashboard();
+    updateInvoiceTable();
+    renderCustomers();
+    renderInvoiceDownloads();
+    populateCustomerSelect();
+    updateLineTotals();
+
+    const settingsForm = document.getElementById('settings-form');
+    if (settingsForm) {
+      const applySettingsToForm = () => {
+        settingsForm.companyName.value = state.company.name || '';
+        settingsForm.companyGstin.value = state.company.gstin || '';
+        settingsForm.companyEmail.value = state.company.email || '';
+        settingsForm.companyPhone.value = state.company.phone || '';
+        settingsForm.companyAddress.value = state.company.address || '';
+        settingsForm.invoiceFooter.value = state.company.footer || '';
+        settingsForm.invoiceFont.value = state.company.font || 'Poppins';
+        settingsForm.invoiceStyle.value = state.company.template || 'modern';
+        settingsForm.watermarkPaid.checked = !!state.company.watermarkPaid;
+        settingsForm.invoicePrefix.value = state.company.invoiceNumber?.prefix || 'EG-';
+        settingsForm.invoiceNext.value = state.company.invoiceNumber?.next || '001';
+        settingsForm.bankName.value = state.company.bank?.name || '';
+        settingsForm.bankAccount.value = state.company.bank?.account || '';
+        settingsForm.bankIfsc.value = state.company.bank?.ifsc || '';
+        settingsForm.bankBranch.value = state.company.bank?.branch || '';
+        settingsForm.bankUpi.value = state.company.bank?.upi || '';
+      };
+
+      applySettingsToForm();
+
+      settingsForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        state.company.name = settingsForm.companyName.value.trim() || state.company.name;
+        state.company.gstin = settingsForm.companyGstin.value.trim();
+        state.company.email = settingsForm.companyEmail.value.trim();
+        state.company.phone = settingsForm.companyPhone.value.trim();
+        state.company.address = settingsForm.companyAddress.value.trim();
+        state.company.footer = settingsForm.invoiceFooter.value.trim();
+        state.company.font = settingsForm.invoiceFont.value;
+        state.company.template = settingsForm.invoiceStyle.value;
+        state.company.watermarkPaid = settingsForm.watermarkPaid.checked;
+        state.company.invoiceNumber.prefix = settingsForm.invoicePrefix.value.trim() || 'EG-';
+        const nextRaw = settingsForm.invoiceNext.value.trim() || state.company.invoiceNumber.next || '001';
+        state.company.invoiceNumber.next = nextRaw;
+        state.company.invoiceNumber.start = nextRaw;
+        state.company.invoiceNumber.pad = Math.max(1, nextRaw.length);
+        state.company.bank.name = settingsForm.bankName.value.trim();
+        state.company.bank.account = settingsForm.bankAccount.value.trim();
+        state.company.bank.ifsc = settingsForm.bankIfsc.value.trim();
+        state.company.bank.branch = settingsForm.bankBranch.value.trim();
+        state.company.bank.upi = settingsForm.bankUpi.value.trim();
+        saveState();
+        alert('Settings saved. New invoices will use this branding.');
+      });
+
+      settingsForm.companyLogo.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          state.company.logo = reader.result;
+          saveState();
+          alert('Logo saved. It will appear on exported invoices.');
+        };
+        reader.readAsDataURL(file);
+      });
+
+      settingsForm.companySignature.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          state.company.signature = reader.result;
+          saveState();
+          alert('Signature saved. It will appear on exported invoices.');
+        };
+        reader.readAsDataURL(file);
+      });
+
+      settingsForm.companyQr.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          state.company.qr = reader.result;
+          saveState();
+          alert('QR code saved. It will appear on exported invoices.');
+          refreshInvoicePreview();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      settingsForm.addEventListener('input', () => {
+        state.company.name = settingsForm.companyName.value.trim() || state.company.name;
+        state.company.gstin = settingsForm.companyGstin.value.trim();
+        state.company.email = settingsForm.companyEmail.value.trim();
+        state.company.phone = settingsForm.companyPhone.value.trim();
+        state.company.address = settingsForm.companyAddress.value.trim();
+        state.company.footer = settingsForm.invoiceFooter.value.trim();
+        state.company.font = settingsForm.invoiceFont.value;
+        state.company.template = settingsForm.invoiceStyle.value;
+        state.company.watermarkPaid = settingsForm.watermarkPaid.checked;
+        state.company.bank.name = settingsForm.bankName.value.trim();
+        state.company.bank.account = settingsForm.bankAccount.value.trim();
+        state.company.bank.ifsc = settingsForm.bankIfsc.value.trim();
+        state.company.bank.branch = settingsForm.bankBranch.value.trim();
+        state.company.bank.upi = settingsForm.bankUpi.value.trim();
+      });
+    }
+  </script>
+</body>
+</html>
